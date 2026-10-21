@@ -1,3 +1,4 @@
+import { emailReplyTo } from './email-settings';
 import { database,databaseReady } from './data';
 import { renderMinistryEmail } from './email-design';
 import { emailReady } from './email';
@@ -22,7 +23,7 @@ export async function deliverNewsletters(kind:'confirmation'|'campaign'){
    content=newsletterContent({...campaign,base,token:subscriber.unsubscribe_token,address:process.env.NEWSLETTER_POSTAL_ADDRESS!.trim()});
   }
   try{
-   const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':message.id},body:JSON.stringify({from:process.env.EMAIL_FROM,to:[subscriber.email],...content}),signal:AbortSignal.timeout(10000)});
+   const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${process.env.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':message.id},body:JSON.stringify({from:process.env.EMAIL_FROM,to:[subscriber.email],...(emailReplyTo()?{reply_to:emailReplyTo()}:{}),...content}),signal:AbortSignal.timeout(10000)});
    if(!response.ok){await db.from('newsletter_messages').update({status:message.attempts>=3?'failed':'queued',next_attempt_at:new Date(Date.now()+60000).toISOString()}).eq('id',message.id);continue;}
    const result=await response.json();const {error:recordError}=await db.from('newsletter_messages').update({status:'sent',provider_id:result.id,sent_at:new Date().toISOString()}).eq('id',message.id);if(!recordError)accepted++;
   }catch{

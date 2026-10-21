@@ -92,3 +92,20 @@ Operational messages, newsletter confirmations, and newsletter campaigns share a
 Visit `/admin/email-preview` while signed in to review a sample volunteer confirmation. Its optional button sends a labeled **design preview** only to the current administrator's account email, with a rate limit. It queues a separate sample record and processes only that record; it does not submit or change an application, resend a real confirmation, or drain unrelated pending notices. Provider acceptance is shown separately from actual inbox delivery. Resend test-sender recipient restrictions still apply (the other administrator's address may not be an allowed test recipient).
 
 The `EMAIL_FROM` test address does not become a ministry address merely because the body is branded. A verified sender/domain still needs the previously described approved setup; do not alter DNS/email services as part of this design update. Email apps control their own toolbar/avatar and may alter rendering in dark mode. Original logo integration remains pending the source artwork. Actual Outlook/Gmail inbox appearance should be checked using the new sample button after deployment. No database migration or new variable is required for the email redesign.
+
+## Microsoft 365 mailbox routing (no account access required)
+
+The confirmed Microsoft 365 Business Basic mailbox can receive human replies and operational administrator notices. This is mailbox routing, not a Microsoft Graph/account/storage connection. It requires no Microsoft password, API secret, app registration, subscription upgrade, or DNS changes.
+
+In Vercel **project** environment settings, add these as **Config** in the intended environment:
+
+- `EMAIL_REPLY_TO`: the approved monitored ministry mailbox, for example `tskforce@tskangel.com`.
+- `ADMIN_NOTIFICATION_EMAIL`: the authorized administrator notification mailbox, which can be the same address.
+
+Keep `EMAIL_FROM` as the currently approved Resend sender. Do not replace it with the Microsoft address until Resend sender-domain verification has been reviewed and completed; owning a working mailbox alone does not authorize Resend to send as that domain. Redeploy the latest code after saving settings. No database migration is needed.
+
+All operational messages, design samples, newsletter confirmations and campaigns include the configured single-address Reply-To. Invalid nonempty reply addresses disable email readiness instead of sending an unsafe header. A recipient pressing Reply should reach the ministry inbox. Administrator notices with no fixed recipient use `ADMIN_NOTIFICATION_EMAIL`; changing this setting does not reroute volunteer/donor messages to that address. Existing pending administrator notices may be included when the queue is next processed.
+
+Test with one new design sample: inspect its Reply-To and reply from your mail client, then check the Microsoft inbox. Separately test a new volunteer application and its administrator notification. Resend's `onboarding@resend.dev` test sender still restricts recipients to the account's approved address; delivery to a different ministry inbox requires the approved sender setup or may be rejected and remain queued. Do not claim mailbox delivery based solely on provider acceptance. Queue retry sends pending notices; it should not be used as a mailbox access test.
+
+SharePoint library integration, Microsoft sign-in, and reading/sending Microsoft mailbox contents are separate future integrations. None is enabled by these settings.
