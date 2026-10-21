@@ -55,3 +55,19 @@ Generic illustrative images are now bundled locally under `public/images`; they 
 The homepage uses section navigation rather than separate unfinished pages. Every section link has a matching target. Mobile navigation closes after selecting a link. Home and back-to-top links target the page top. Screenshot previews should be displayed directly in chat; internal workspace paths are not public website URLs.
 
 Update validation: all four bundled image elements decoded successfully; all 21 internal links resolve to existing targets. Browser clicks confirmed each desktop navigation link changes the hash and scrolls to its section. The mobile Volunteer link changes the hash to `#volunteer` and closes the menu. Updated desktop/mobile overflow and accessibility checks passed (zero automated violations, one incomplete check still needing manual review). The build and TypeScript check passed after these changes.
+
+## Calendar, volunteer, giving, and vision increment
+
+Public routes: `/calendar`, `/calendar/[id]`, `/volunteer`, `/give`. Private leadership routes: `/admin` and `/admin/login`. The homepage now includes the vision board and all six approved values. Mission and vision use administrator-editable database content with supplied copy as the initial fallback.
+
+See [Connect services](docs/CONNECT-SERVICES.md) for the Supabase migration, Vercel variables, administrator creation, email queue, and Stripe test configuration. Credentials have not been supplied; actual Supabase authentication/storage, inbox delivery, and Stripe test checkout must still be exercised after connection. Forms show an explicit setup state instead of pretending to save or charge when integrations are missing.
+
+`npm test` runs core tests and skips database tests unless a dedicated test container is provided. Database tests were run against isolated PostgreSQL using the actual application migration, with a minimal test-only `auth.users` table and Supabase role names. This verifies SQL behavior, not hosted Supabase Auth or PostgREST. Do not run fixture tests against the real project.
+
+### Validation for this increment
+
+- Frozen-lockfile installation, production build, and TypeScript check passed.
+- 20 tests passed with the isolated PostgreSQL test container (0 failed, 0 skipped): validation, ICS formatting/time-zone instants, cancellation semantics, role restrictions, transactional email queue, webhook idempotency, rate limiting, capacity/concurrency, and proxy-aware origin checks.
+- Production HTTP checks passed for the five public/sign-in pages; `/admin` redirected unauthenticated visitors; admin API/export returned 401; cross-origin submission returned 403; unconfigured signup/checkout returned explicit 503; nonexistent event export returned 404.
+- Chromium desktop (1440px) and mobile (390px) checks passed for homepage, calendar, volunteer, give, and administrator sign-in: no horizontal overflow, working month/list controls and giving-frequency minimums, zero automated WCAG-tagged axe violations. Some scans retain incomplete items requiring manual review; this is not full accessibility certification.
+- Actual hosted Supabase/Auth application submission and admin review, email inbox delivery, and Stripe sandbox checkout/recurring/webhook workflows are **not yet verified** because the services are not connected to this running instance.

@@ -1,0 +1,10 @@
+import type { OutreachEvent } from './data';
+const utc=(date:string)=>new Date(date).toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+const escape=(text:string)=>text.replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/;/g,'\\;').replace(/,/g,'\\,');
+// RFC 5545 folds content at 75 octets, never inside a UTF-8 character.
+export function foldLine(line:string){let out='',bytes=0;for(const ch of line){const size=Buffer.byteLength(ch);if(bytes+size>75){out+='\r\n ';bytes=1;}out+=ch;bytes+=size;}return out;}
+export function calendarFile(event:OutreachEvent,url:string){
+  return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//TskAngel//Outreach Calendar//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH',`X-WR-TIMEZONE:${escape(event.time_zone)}`,'BEGIN:VEVENT',`UID:${event.id}@tskangel.com`,`DTSTAMP:${utc(event.updated_at)}`,`LAST-MODIFIED:${utc(event.updated_at)}`,`SEQUENCE:${event.revision}`,`DTSTART:${utc(event.starts_at)}`,`DTEND:${utc(event.ends_at)}`,`SUMMARY:${escape(event.title)}`,`DESCRIPTION:${escape(event.description+'\nStatus: '+event.status+'\nCheck current details: '+url+'\nDownloaded calendar files do not update automatically.')}`,`LOCATION:${escape(event.public_location)}`,`URL:${url}`,`STATUS:${event.status==='Canceled'?'CANCELLED':event.status==='Tentative'?'TENTATIVE':'CONFIRMED'}`,'END:VEVENT','END:VCALENDAR'].map(foldLine).join('\r\n')+'\r\n';
+}
+export function googleCalendar(event:OutreachEvent,url:string){return 'https://calendar.google.com/calendar/render?'+new URLSearchParams({action:'TEMPLATE',text:event.title,dates:utc(event.starts_at)+'/'+utc(event.ends_at),ctz:event.time_zone,details:event.description+'\nLatest details: '+url,location:event.public_location}).toString();}
+export function outlookCalendar(event:OutreachEvent,url:string){return 'https://outlook.live.com/calendar/0/deeplink/compose?'+new URLSearchParams({path:'/calendar/action/compose',rru:'addevent',subject:event.title,startdt:new Date(event.starts_at).toISOString(),enddt:new Date(event.ends_at).toISOString(),body:event.description+'\nLatest details: '+url,location:event.public_location}).toString();}

@@ -1,0 +1,4 @@
+import SiteShell from '@/app/components/site-shell';
+import CancelForm from './cancel-form';
+export const metadata={title:'Cancel an Event Registration | TskAngel',robots:{index:false,follow:false},referrer:'no-referrer' as const};
+export default async function CancelPage({searchParams}:{searchParams:Promise<{token?:string}>}){const {token}=await searchParams;return <SiteShell><section className="wrap page-heading"><h1>Plans changed?</h1><p className="lead">Cancel your event registration to release your place for another volunteer.</p></section><section className="wrap narrow page-content">{token&&/^[a-f0-9]{64}$/.test(token)?<CancelForm token={token}/>:<p className="notice">Use the private cancellation link in your registration email. No registration was changed.</p>}</section></SiteShell>;}

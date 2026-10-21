@@ -1,0 +1,5 @@
+import { after,NextResponse } from 'next/server';
+import { database,databaseReady } from '@/lib/data';
+import { sameOrigin,errorResponse,readBody,rateLimit } from '@/lib/http';
+import { sendQueuedEmails } from '@/lib/email';
+export async function POST(request:Request){if(!sameOrigin(request))return errorResponse('Please submit from this website.',403);if(!databaseReady())return errorResponse('Registration management is not connected yet.',503);try{const {token}=await readBody(request);if(typeof token!=='string'||!/^[a-f0-9]{64}$/.test(token))return errorResponse('Invalid cancellation link.');if(!await rateLimit(request,'cancel',20))return errorResponse('Please try again later.',429);const {error}=await database().rpc('cancel_registration',{p_token:token});if(error)return errorResponse('We could not confirm cancellation. Please try again later.',503);after(async()=>{try{await sendQueuedEmails();}catch{}});return NextResponse.json({message:'This registration is canceled or was already inactive. No active place remains under this link.'},{headers:{'Cache-Control':'no-store'}});}catch{return errorResponse('Please check the cancellation link.');}}
