@@ -4,7 +4,7 @@ Open `/admin` and sign in with an existing authorized administrator account. Thi
 
 ## One-time database setup
 
-Apply **003_leadership_dashboard.sql** in the Supabase SQL Editor after migrations 001 and 002 have succeeded. Use a new query; paste the complete file, and Run once. Do not re-run the original migrations. Migration 003 adds the private testimonial table, a server-only metrics function, and indexes. It does not delete, archive, move, or publish existing records.
+Apply **003_leadership_dashboard.sql** in the Supabase SQL Editor after migrations 001 and 002 have succeeded. Use a new query; paste the complete file, and Run. The current 003 file checks prerequisites before changing anything, runs in one transaction, and may be retried after prerequisites exist. Do not re-run the original migrations. Migration 003 adds the private testimonial table, a server-only metrics function, and indexes. It does not delete, archive, move, or publish existing records.
 
 Until migration 003 is installed, the overview explains that totals are unavailable and testimonial editing is disabled. Existing event, application, donation and email controls remain available under their tabs.
 
@@ -26,3 +26,7 @@ Each dashboard section fetches only its relevant records. Overview aggregates us
 ## Verification for this change
 
 Production build passed; all 59 automated tests passed against an isolated local Postgres 17 database with migrations 001–003. Tests cover permission restrictions, full-history counts, donation totals beyond 50 rows, currency separation, consent enforcement and withdrawal. Desktop (1360px) and mobile (390px) overview fixtures passed automated WCAG checks and overflow checks. The fixture statistics and people exist only in local review artifacts, never in the real database. Hosted data, authenticated UI flows, actual service-plan performance and real testimonial consent must still be reviewed in the configured preview project.
+
+## Recovering from a missing newsletter table
+
+An error saying `relation "newsletter_subscribers" does not exist` means update 002 has not successfully created the newsletter tables. In a **new** Supabase SQL query, paste the complete `002_newsletters.sql` file and run it. After it succeeds, use another new query to run the complete current `003_leadership_dashboard.sql` file. Do not delete any tables, records or existing queries. The current 003 also tolerates its own already-created table/indexes, so a partial earlier 003 attempt does not require deleting anything. If 002 instead reports an existing relation, stop and inspect that partial newsletter setup rather than deleting records or repeatedly running individual statements. Success of these local recovery tests does not confirm changes in the user's hosted database.
