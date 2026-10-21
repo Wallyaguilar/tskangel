@@ -76,3 +76,11 @@ Application tables have RLS with no anonymous/authenticated read policies and ex
 The dashboard shows the latest 100 applications/registrations and 50 donation records. The application JSON export is administrator-only; avoid storing exports in public locations. Individual application deletion is supported, but related registrations, provider email records, backups, and outbox retention require a coordinated retention/deletion process. Review retention monthly before real intake and document the approved schedule. Bulk retention automation, consent-managed photography, and complete legal policy pages remain follow-up work.
 
 Core values currently come from `lib/data.ts`; mission/vision are editable in the dashboard. No authentic logo file is available in the workspace yet. Generic imagery remains visibly labeled.
+
+## Clear checkout results
+
+New Checkout sessions return to `/give?checkout=returned&session_id={CHECKOUT_SESSION_ID}`. A prominent, accessible result banner polls a server-side status endpoint for roughly 35 seconds, then offers manual rechecking. Green means Stripe reports paid **and** the matching webhook-written donation record is completed, with the same amount/currency. Yellow covers pending, unavailable, canceled/expired, or refunded/adjusted results. Red is reserved for confirmed unsuccessful payment information. Test mode remains explicit throughout.
+
+The status response exposes only the result and, when confirmed, the amount/currency—never donor names, email addresses, customer/subscription IDs, or messages. Responses are rate-limited and not cached. The giving page suppresses referrers and hides the new-gift form on checkout return so an uncertain result does not encourage immediate duplicate giving.
+
+Older return URLs without a session reference cannot be matched safely. Check the existing donation in the leadership dashboard instead. No schema migration, new secret, or additional Stripe event selection is required for this change; only new checkouts receive the reference automatically. A redirect alone still cannot create a successful donation record.

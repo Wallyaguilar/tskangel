@@ -14,7 +14,7 @@ export async function POST(request:Request){
       mode:v.frequency==='monthly'?'subscription':'payment',allowed_payment_method_types:['card'],customer_email:v.email,
       line_items:[{quantity:1,price_data:{currency:'usd',unit_amount:Math.round(v.amount*100),product_data:{name:v.frequency==='monthly'?'TskAngel monthly support — TEST':'TskAngel one-time support — TEST'},...(v.frequency==='monthly'?{recurring:{interval:'month' as const}}:{})}}],
       metadata,...(v.frequency==='monthly'?{subscription_data:{metadata}}:{payment_intent_data:{metadata,receipt_email:v.email}}),
-      success_url:base+'/give?checkout=returned',cancel_url:base+'/give?checkout=canceled',
+      success_url:base+'/give?checkout=returned&session_id={CHECKOUT_SESSION_ID}',cancel_url:base+'/give?checkout=canceled',
     });
     if(session.livemode||!session.url)return errorResponse('Only test-mode checkout is allowed.',503);
     return NextResponse.json({url:session.url},{headers:{'Cache-Control':'no-store'}});
