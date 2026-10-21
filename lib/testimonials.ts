@@ -1,0 +1,3 @@
+import {z} from 'zod';
+export const testimonialSchema=z.object({id:z.string().uuid().optional(),display_name:z.string().trim().min(2).max(80),perspective:z.enum(['Volunteer','Community member']),quote:z.string().trim().min(20).max(2000),consent_confirmed:z.boolean(),consent_evidence:z.string().trim().max(2000),published:z.boolean()}).strict().superRefine((v,ctx)=>{if(v.published&&(!v.consent_confirmed||v.consent_evidence.length<10))ctx.addIssue({code:'custom',message:'Publication requires confirmed permission and a private consent record.',path:['published']});});
+export type Testimonial={id:string;display_name:string;perspective:'Volunteer'|'Community member';quote:string;consent_confirmed:boolean;consent_evidence:string;published:boolean};

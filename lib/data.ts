@@ -35,5 +35,5 @@ export async function siteContent(){
   const {data}=await database().from('site_content').select('mission,vision').eq('id',1).maybeSingle();
   return data||defaultContent;
 }
-export function eventDate(event:OutreachEvent){return new Intl.DateTimeFormat('en-US',{dateStyle:'full',timeZone:event.time_zone}).format(new Date(event.starts_at));}
-export function eventTime(event:OutreachEvent){const fmt=new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit',timeZoneName:'short',timeZone:event.time_zone});return `${fmt.format(new Date(event.starts_at))} – ${fmt.format(new Date(event.ends_at))}`;}
+export function eventDate(event:Pick<OutreachEvent,'starts_at'|'time_zone'>){return new Intl.DateTimeFormat('en-US',{dateStyle:'full',timeZone:event.time_zone}).format(new Date(event.starts_at));}
+export function eventTime(event:Pick<OutreachEvent,'starts_at'|'ends_at'|'time_zone'>){const fmt=new Intl.DateTimeFormat('en-US',{hour:'numeric',minute:'2-digit',timeZoneName:'short',timeZone:event.time_zone});return `${fmt.format(new Date(event.starts_at))} – ${fmt.format(new Date(event.ends_at))}`;}
